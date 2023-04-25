@@ -2,8 +2,9 @@ import numpy as np
 from scipy.io import readsav
 
 DATAFILES = [
-    './fts_disk_center.idlsave',
-'./ftscnt_full.sav']
+    './fts_disk_center.idlsave'#,
+    #'./ftscnt_full.sav'
+    ]
 
 CLIGHT = 2.99792458e8  # speed of light [m/s]
 AA_TO_M = 1e-10
@@ -21,7 +22,7 @@ class fts(object):
         self.datafile = './fts_disk_center.idlsave'
 
     def get_atlas(self, atlas=0):
-
+        atlas = 0
         # The atlas parameter defines if the reference atlas is the original from J. Leenarts, expressed in watt/(cm2 ster AA)
         # as emitted at solar surface
         # Or the new atlas exported by M. Collados allowing for going beyong in the IR spectrum, and expressed
