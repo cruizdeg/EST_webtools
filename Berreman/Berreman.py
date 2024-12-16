@@ -466,14 +466,12 @@ class Berreman(object):
         ps = self.poynting(Fs[0])
         cp = 0.00001
 
-        if abs(pc[0]) < cp:
-            pc[0] = np.nan
-        if abs(pc[2]) < cp:
-            pc[2] = np.nan
-        if abs(ps[1]) < cp:
-            ps[1] = np.nan
-        if abs(ps[3]) < cp:
-            ps[3] = np.nan
+        for i in [0, 2]:
+            if abs(pc[i]) < cp:
+                pc[i] = np.nan
+        for i in [1, 3]:
+           if abs(pc[i]) < cp:
+               ps[i] = np.nan
 
         ## PUT CHANGE BASIS VECTOR HERE, DEPRECIATED TODO: COMPROBAR CODIGO ###
         if e != 0 or phi != 0:
