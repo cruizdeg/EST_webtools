@@ -294,6 +294,78 @@ class Berreman(object):
 
         return M
 
+    def cmmat(self, Fc, M, Fs):
+        """
+        Mueller and Stokes matrices for a birefringent coating, including the effects
+        of interference.
+        :param Fc:
+        :param M:
+        :param Fs:
+        :return:
+        """
+        Mr = np.zeros((4, 4))
+        Mt = np.zeros((4, 4))
+
+        S = np.array([
+            [1, 1, 1, 1, 1, 1],
+            [1, -1, 0, 0, 0, 0],
+            [0, 0, 1, -1, 0, 0],
+            [0, 0, 0, 0, 1, -1]
+        ])
+
+        gCp, gSp = Fc[1, 0], Fs[1, 0]
+        gCs, gSs = Fc[3, 2], Fs[3, 2]
+
+        ctC = np.sqrt(-gCs / gCp)
+        ctS = np.sqrt(-gSs / gSp)
+        #TODO: Here ester makes Z0 = 1 saying that "adjust based on the problem definition"
+        nC = np.sqrt(-gCs * gCp) * Z0
+        nS = np.sqrt(-gSs * gSp) * Z0
+
+        R, r = self.reflect(Fc, M, Fs, 0, 0)
+
+        r11, r12 = r[0, :2]
+        r21, r22 = r[1, :2]
+        t11, t12 = r[2, :2]
+        t21, t22 = r[3, :2]
+
+        ## Computing the different polarization states
+        #POLARIZATION STATES DEFINITION:
+        POLAR = [[1, 0],
+                 [0, 1],
+                 [1/np.sqrt(2), 1/np.sqrt(2)],
+                 [1 / np.sqrt(2), - 1 / np.sqrt(2)],
+                 [1 / np.sqrt(2), -1j / np.sqrt(2)],
+                 [1 / np.sqrt(2), +1j / np.sqrt(2)]
+                 ]
+        #FIXME: this can be done more nicely pythonic
+        for state in POLAR:
+            EY, EZ = state
+            Ey = EY * ctC
+            Ez = EZ
+            EyC = np.outer(r11, Ey) + np.outer(r12, Ez)
+            EzC = np.outer(r21, Ey) + np.outer(r22, Ez)
+            EY = -EyC / ctC
+            EZ = EzC
+            sR = self.stokes(EY, EZ)
+
+            EyS = np.outer(t11, Ey) + np.outer(t12, Ez)
+            EzS = np.outer(t21, Ey) + np.outer(t22, Ez)
+            EY = EyS / ctS
+            EZ = EzS
+            sT = self.stokes(EY, EZ)
+            sT *= (gSs / gCs)
+
+        sR = np.column_stack(SR)
+        sT = np.column_stack(ST)
+        sR = sR[:, :, 0]
+        S_inv = np.linalg.pinv(S)
+
+        Mr = np.dot(sR, S_inv)
+        Mt = np.dot(sT, S_inv)
+
+        return Mr, Mt, sR, sT
+
     def poynting(self, E, H = None):
         """
         Poynting flux vectors used in Berreman calculus.
