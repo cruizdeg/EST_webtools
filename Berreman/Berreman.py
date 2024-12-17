@@ -302,9 +302,14 @@ class Berreman(object):
         :param M:
         :param Fs:
         :return:
+            Mr: 4x4 Mueller matrix of the reflected beam
+            Mt: 4x4 Mueller matrix of the transmitted beam
+            sR: 4x6 Stokes matrix of the reflected beam
+            sT: 4x6 Stokes matrix of the transmitted beam
         """
-        Mr = np.zeros((4, 4))
-        Mt = np.zeros((4, 4))
+        # In principle not needed
+        #Mr = np.zeros((4, 4))
+        #Mt = np.zeros((4, 4))
 
         S = np.array([
             [1, 1, 1, 1, 1, 1],
@@ -318,7 +323,7 @@ class Berreman(object):
 
         ctC = np.sqrt(-gCs / gCp)
         ctS = np.sqrt(-gSs / gSp)
-        #TODO: Here ester makes Z0 = 1 saying that "adjust based on the problem definition"
+        #TODO: Here esther makes Z0 = 1 saying that "adjust based on the problem definition", additionally nC and nS looks like not used
         nC = np.sqrt(-gCs * gCp) * Z0
         nS = np.sqrt(-gSs * gSp) * Z0
 
@@ -331,14 +336,16 @@ class Berreman(object):
 
         ## Computing the different polarization states
         #POLARIZATION STATES DEFINITION:
-        POLAR = [[1, 0],
-                 [0, 1],
-                 [1/np.sqrt(2), 1/np.sqrt(2)],
-                 [1 / np.sqrt(2), - 1 / np.sqrt(2)],
-                 [1 / np.sqrt(2), -1j / np.sqrt(2)],
-                 [1 / np.sqrt(2), +1j / np.sqrt(2)]
+        POLAR = [[1, 0], # P0
+                 [0, 1], # P90
+                 [1/np.sqrt(2), 1/np.sqrt(2)], # P45
+                 [1 / np.sqrt(2), - 1 / np.sqrt(2)], # P135
+                 [1 / np.sqrt(2), -1j / np.sqrt(2)], # R
+                 [1 / np.sqrt(2), +1j / np.sqrt(2)] # L
                  ]
-        #FIXME: this can be done more nicely pythonic
+        sr_, st_ = [], [] #stores the stokes components for the reflected and transmited beams
+
+        #TODO: Test if this is working like the original code
         for state in POLAR:
             EY, EZ = state
             Ey = EY * ctC
@@ -347,22 +354,22 @@ class Berreman(object):
             EzC = np.outer(r21, Ey) + np.outer(r22, Ez)
             EY = -EyC / ctC
             EZ = EzC
-            sR = self.stokes(EY, EZ)
+            sr_.append(self.stokes(EY, EZ))
 
             EyS = np.outer(t11, Ey) + np.outer(t12, Ez)
             EzS = np.outer(t21, Ey) + np.outer(t22, Ez)
             EY = EyS / ctS
             EZ = EzS
-            sT = self.stokes(EY, EZ)
-            sT *= (gSs / gCs)
+            st = self.stokes(EY, EZ)
+            st *= (gSs / gCs)
+            st_.append(st)
 
-        sR = np.column_stack(SR)
-        sT = np.column_stack(ST)
-        sR = sR[:, :, 0]
-        S_inv = np.linalg.pinv(S)
+        # Builds the transposed array matrix
+        sR = np.array(sr_).T
+        sT = np.array(st_).T
 
-        Mr = np.dot(sR, S_inv)
-        Mt = np.dot(sT, S_inv)
+        Mr = np.linalg.solve(S, sR)
+        Mt = np.linalg.solve(S, sT)
 
         return Mr, Mt, sR, sT
 
