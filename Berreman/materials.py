@@ -22,7 +22,7 @@ def fusedsilica(w):
     C2 = 1.35120631E-02
     C3 = 9.79340025E+01
     # Sellmeier equation
-    n = sellmeier(w, [B1, B2, B3, C1, C2, C3])#np.sqrt(1 + B1 * ww / (ww - C1) + B2 * ww / (ww - C2) + B3 * ww / (ww - C3))
+    n = sellmeier(w, [B1, B2, B3, C1, C2, C3])
     return n
 
 def quartz(w):
@@ -127,5 +127,9 @@ def sellmeier(w, coeffs):
     """Computes the refraction index with the selmeier eq.s."""
     w /= 1000  # Converts to microns
     ww = w**2
-    n2 = 1+(coeffs[0] * ww)/(ww - coeffs[3])+(coeffs[1] * ww)/(ww-coeffs[4])+(coeffs[2] * ww)/(ww-coeffs[5])
-    return np.sqrt(n2)
+    n = 1+(coeffs[0] * ww)/(ww - coeffs[3])+(coeffs[1] * ww)/(ww-coeffs[4])+(coeffs[2] * ww)/(ww-coeffs[5])
+    return np.sqrt(n)
+
+def birrefringence(w, material):
+    An = material["H"] + (material["I"] * w**2)/(w**2 - material["G"]) + (material["J"] * w**2)/(w**2 - material["L"])
+    return An
