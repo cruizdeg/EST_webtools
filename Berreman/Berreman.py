@@ -109,19 +109,21 @@ class Berreman(object):
                          F[1]])
 
         elif len(material) == 2 and beta == 0:  # PS material
+            print("PS material")
             ny = material[0]
             nz = material[1]
+
             F = np.array([[1, 1, 0, 0],
                           [ny / Z0, -ny / Z0, 0, 0],
                           [0, 0, 1, 1],
                           [0, 0, -nz / Z0, nz / Z0]])
             alpha = np.array([ny, -ny, nz, -nz])
-            E = np.array([0, 0, 0, 0],
+            E = np.array([[0, 0, 0, 0],
                           F[0],
-                          F[2])
-            H = np.array([0, 0, 0, 0],
+                          F[2]])
+            H = np.array([[0, 0, 0, 0],
                           F[3],
-                          F[1])
+                          F[1]])
 
         elif len(material) == 6:  # Birefringent material
             n1, n2, n3, eta, psi, xi = material
@@ -375,6 +377,14 @@ class Berreman(object):
         Mt = np.linalg.solve(S, sT)
 
         return Mr, Mt, sR, sT
+
+    def hmat(self):
+        """
+        Characteristic matrix of a chiral film for use in Berreman calculus.
+        :return:
+        """
+        M=1
+        return M
 
     def poynting(self, E, H = None):
         """
