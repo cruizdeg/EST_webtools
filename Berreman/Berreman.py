@@ -321,8 +321,8 @@ class Berreman(object):
             [0, 0, 0, 0, 1, -1]
         ])
 
-        gCp, gSp = Fc[1, 0], Fs[1, 0]
-        gCs, gSs = Fc[3, 2], Fs[3, 2]
+        gCp, gSp = Fc[0][1, 0], Fs[0][1, 0]
+        gCs, gSs = Fc[0][3, 2], Fs[0][3, 2]
 
         ctC = np.sqrt(-gCs / gCp)
         ctS = np.sqrt(-gSs / gSp)
