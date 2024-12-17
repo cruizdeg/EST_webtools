@@ -323,9 +323,10 @@ class Berreman(object):
 
         ctC = np.sqrt(-gCs / gCp)
         ctS = np.sqrt(-gSs / gSp)
-        #TODO: Here esther makes Z0 = 1 saying that "adjust based on the problem definition", additionally nC and nS looks like not used
-        nC = np.sqrt(-gCs * gCp) * Z0
-        nS = np.sqrt(-gSs * gSp) * Z0
+
+        # In principle not used
+        #nC = np.sqrt(-gCs * gCp) * Z0
+        #nS = np.sqrt(-gSs * gSp) * Z0
 
         R, r = self.reflect(Fc, M, Fs, 0, 0)
 
