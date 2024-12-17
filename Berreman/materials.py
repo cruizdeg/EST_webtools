@@ -14,8 +14,6 @@ def fusedsilica(w):
     Returns:
         Refractive index of fused silica (numpy array or scalar)
     """
-    #w /= 1000  # Convert wavelength to micrometers
-    #ww = w ** 2
     # Sellmeier coefficients
     B1 = 6.96166300E-01
     B2 = 4.07942600E-01
@@ -24,8 +22,8 @@ def fusedsilica(w):
     C2 = 1.35120631E-02
     C3 = 9.79340025E+01
     # Sellmeier equation
-    y = sellmeier(w, [B1, B2, B3, C1, C2, C3])#np.sqrt(1 + B1 * ww / (ww - C1) + B2 * ww / (ww - C2) + B3 * ww / (ww - C3))
-    return y
+    n = sellmeier(w, [B1, B2, B3, C1, C2, C3])#np.sqrt(1 + B1 * ww / (ww - C1) + B2 * ww / (ww - C2) + B3 * ww / (ww - C3))
+    return n
 
 def quartz(w):
     """
