@@ -298,19 +298,20 @@ class Berreman(object):
         """
         Mueller and Stokes matrices for a birefringent coating, including the effects
         of interference.
-        :param Fc:
+        :param Fc: Field Matrix of the cover
         :param M:
-        :param Fs:
+        :param Fs: Field Matrix of the substrate
         :return:
             Mr: 4x4 Mueller matrix of the reflected beam
             Mt: 4x4 Mueller matrix of the transmitted beam
             sR: 4x6 Stokes matrix of the reflected beam
             sT: 4x6 Stokes matrix of the transmitted beam
         """
-        # In principle not needed
-        #Mr = np.zeros((4, 4))
-        #Mt = np.zeros((4, 4))
+        # In principle we only get the electric field of Fc and Fs
+        Fc = Fc[0]
+        Fs = Fs[0]
 
+        # Equation 5.31 synthetic matrix of stokes vectors
         S = np.array([
             [1, 1, 1, 1, 1, 1],
             [1, -1, 0, 0, 0, 0],
@@ -365,10 +366,11 @@ class Berreman(object):
             st *= (gSs / gCs)
             st_.append(st)
 
-        # Builds the transposed array matrix
+        # Builds the transposed array of 4x6 stokes Matrix for the reflected and transmitted beam
         sR = np.array(sr_).T
         sT = np.array(st_).T
 
+        # Equation 5.34, builds the 4x4 Mueller Matrix for the reflected and transmitted beam
         Mr = np.linalg.solve(S, sR)
         Mt = np.linalg.solve(S, sT)
 
