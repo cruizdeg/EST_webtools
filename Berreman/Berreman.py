@@ -41,6 +41,20 @@ class Berreman(object):
         ])
         return y
 
+    def rbmat(self,xi):
+        """
+        Rotation matrix used in Berreman calculus.
+        :param xi:
+        :return: the rotation matix for angle xi radian
+        """
+        c = np.cos(xi)
+        s = np.sin(xi)
+        Rb = np.array([[c, 0, -s, 0],
+              [0, c, 0, s],
+              [s, 0, c, 0],
+              [0, -s, 0, c]])
+        return Rb
+
     def epsilon(self, layer):
         """
         Relative permittivity matrix used in Berreman calculus.
