@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.linalg import expm
 
 Z0 = 377 #impedance of free space (Ohms)
 class Berreman(object):
