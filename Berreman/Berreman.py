@@ -338,10 +338,6 @@ class Berreman(object):
         ctC = np.sqrt(-gCs / gCp)
         ctS = np.sqrt(-gSs / gSp)
 
-        # In principle not used
-        #nC = np.sqrt(-gCs * gCp) * Z0
-        #nS = np.sqrt(-gSs * gSp) * Z0
-
         R, r = self.reflect(Fc, M, Fs, 0, 0)
 
         r11, r12 = r[0, :2]
@@ -350,17 +346,17 @@ class Berreman(object):
         t21, t22 = r[3, :2]
 
         ## Computing the different polarization states
-        #POLARIZATION STATES DEFINITION:
-        POLAR = [[1, 0], # P0
-                 [0, 1], # P90
-                 [1/np.sqrt(2), 1/np.sqrt(2)], # P45
-                 [1 / np.sqrt(2), - 1 / np.sqrt(2)], # P135
-                 [1 / np.sqrt(2), -1j / np.sqrt(2)], # R
-                 [1 / np.sqrt(2), +1j / np.sqrt(2)] # L
+        # POLARIZATION STATES DEFINITION:
+        POLAR = [[1, 0],  # P0
+                 [0, 1],  # P90
+                 [1 / np.sqrt(2), 1 / np.sqrt(2)],  # P45
+                 [1 / np.sqrt(2), - 1 / np.sqrt(2)],  # P135
+                 [1 / np.sqrt(2), -1j / np.sqrt(2)],  # R
+                 [1 / np.sqrt(2), +1j / np.sqrt(2)]  # L
                  ]
-        sr_, st_ = [], [] #stores the stokes components for the reflected and transmited beams
+        sr_, st_ = [], []  # stores the stokes components for the reflected and transmited beams
 
-        #TODO: Test if this is working like the original code
+        # TODO: works for DKIST example but not with the book example
         for state in POLAR:
             EY, EZ = state
             Ey = EY * ctC
@@ -375,16 +371,20 @@ class Berreman(object):
             EzS = np.outer(t21, Ey) + np.outer(t22, Ez)
             EY = EyS / ctS
             EZ = EzS
-            st = np.outer(self.stokes(EY, EZ),gSs / gCs)
+            st = self.stokes(EY, EZ)
+            st = np.outer(st, (gSs / gCs))
             st_.append(st)
 
         # Builds the transposed array of 4x6 stokes Matrix for the reflected and transmitted beam
-        sR = np.array(sr_).T
-        sT = np.array(st_).T
+        sR = np.array(sr_)
+        sT = np.array(st_)
+        sR = sR[:, :, 0, 0].T
+        sT = sT[:, :, 0].T
+        S_inv = np.linalg.pinv(S)
 
         # Equation 5.34, builds the 4x4 Mueller Matrix for the reflected and transmitted beam
-        Mr = np.linalg.solve(S, sR)
-        Mt = np.linalg.solve(S, sT)
+        Mr = np.dot(sR, S_inv)
+        Mt = np.dot(sT, S_inv)
 
         return Mr, Mt, sR, sT
 
