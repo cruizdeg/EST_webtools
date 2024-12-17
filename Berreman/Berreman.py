@@ -324,10 +324,6 @@ class Berreman(object):
             sR: 4x6 Stokes matrix of the reflected beam
             sT: 4x6 Stokes matrix of the transmitted beam
         """
-        # In principle we only get the electric field of Fc and Fs
-        Fc = Fc[0]
-        Fs = Fs[0]
-
         # Equation 5.31 synthetic matrix of stokes vectors
         S = np.array([
             [1, 1, 1, 1, 1, 1],
@@ -379,8 +375,7 @@ class Berreman(object):
             EzS = np.outer(t21, Ey) + np.outer(t22, Ez)
             EY = EyS / ctS
             EZ = EzS
-            st = self.stokes(EY, EZ)
-            st *= (gSs / gCs)
+            st = np.outer(self.stokes(EY, EZ),gSs / gCs)
             st_.append(st)
 
         # Builds the transposed array of 4x6 stokes Matrix for the reflected and transmitted beam
