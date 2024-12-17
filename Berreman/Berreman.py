@@ -388,12 +388,63 @@ class Berreman(object):
 
         return Mr, Mt, sR, sT
 
-    def hmat(self):
+    def hmat(self, arg1, beta=None):
         """
         Characteristic matrix of a chiral film for use in Berreman calculus.
         :return:
         """
-        M=1
+        cols = len(arg1)
+
+        if beta is None and cols == 6:  # Case 1: Double helix, PS sublayers
+            n2, n3, xi1, xi2, nj, G = arg1
+            nav = (abs(n2) + abs(n3)) / 2
+            dxi = xi2 - xi1
+
+            if nj == 0:  # Continuous matrix
+                M = expm(np.array([
+                    [0, -1j * G * abs(dxi) / nav, -dxi, 0],
+                    [-1j * G * abs(dxi) * n2 ** 2 / nav, 0, 0, dxi],
+                    [dxi, 0, 0, 1j * G * abs(dxi) / nav],
+                    [0, -dxi, 1j * G * abs(dxi) * n3 ** 2 / nav, 0]
+                ]))
+            else:  # Deposition matrix
+                dxij = dxi / nj
+                dw = G / (2 * nav * nj) * abs(dxi) / np.pi
+                M = self.cmat([n2, n3, dw / 2], 0)
+                M = np.linalg.matrix_power(np.matmul(np.matmul(M, self.rbmat(dxij)), M), nj)
+
+            M = np.matmul(np.matmul(self.rbmat(xi1), M), self.rbmat(-xi2))
+
+        elif beta is None and cols == 7:  # Case 2: Double helix with gain
+            n2, n3, xi1, xi2, nj, G, g = arg1
+            nav = (abs(n2) + abs(n3)) / 2
+            dxi = (xi2 - xi1) / nj
+            dw = G / (2 * nav * nj) * abs(xi2 - xi1) / np.pi
+
+            M = self.cmat([n2, n3, dw / 2, g], 0)
+            M = np.linalg.matrix_power(np.matmul(np.matmul(M, self.rbmat(dxi)), M), nj)
+            M = np.matmul(np.matmul(self.rbmat(xi1), M), self.rbmat(-xi2))
+
+        elif beta is not None and cols == 9:  # Case 3: Single helix, tilted sublayers
+            n1, n2, n3, eta, psi, xi1, xi2, nj, G = arg1
+            np_val = 1 / np.sqrt((np.sin(psi) ** 2) / (n1 ** 2) + (np.cos(psi) ** 2) / (n2 ** 2))
+            nav = (abs(np_val) + abs(n3)) / 2
+            dxi = (xi2 - xi1) / nj
+            dw = G / (2 * nav * nj) * abs(xi2 - xi1) / np.pi
+
+            if beta == 0:
+                M = self.cmat([n1, n2, n3, eta, psi, 0, dw / 2], 0)
+                M = np.linalg.matrix_power(np.matmul(np.matmul(M, self.rbmat(dxi)), M), nj)
+                M = np.matmul(np.matmul(self.rbmat(xi1), M), self.rbmat(-xi2))
+
+            else:
+                M = self.cmat([n1, n2, n3, eta, psi, xi1, dw / 2], beta)
+                for j in range(2, nj + 1):
+                    xi = xi1 + (xi2 - xi1) * (j - 1) / nj
+                    M = np.matmul(M, self.cmat([n1, n2, n3, eta, psi, xi, dw], beta))
+                M = np.matmul(M, self.cmat([n1, n2, n3, eta, psi, xi2, dw / 2], beta))
+        else:
+            raise ValueError("Invalid input arguments.")
         return M
 
     def poynting(self, E, H = None):
