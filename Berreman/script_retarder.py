@@ -3,6 +3,9 @@
 Created on Wed Nov 27 12:42:17 2024
 
 @author: esoria
+
+This script is an example that reproduces the results of the figure Fig. 5 Harrington et al.: Polarization modeling and
+predictions for DKIST part 2: application.
 """
 import numpy as np
 from Berreman import Berreman
@@ -16,6 +19,7 @@ B = Berreman.Berreman()
 theta_i = 0  # Incidence angle
 
 wl = np.arange(380, 900, 2)  # wavelength range in nanometers
+
 #Dictionary storing the Mueller Matrix elements
 mueller_elements = {f"e{i}{j}": [] for i in range(1, 5) for j in range(1, 5)}
 
@@ -65,7 +69,7 @@ for i in range(4):
         ax.set_xlabel('Wavelength (nm)')
         ax.set_ylabel('MM')
 
-            # Configurar límites específicos
+            # Configures the specific limits for the graphs
 
         if j == 0 and i == 0:
             ax.set_ylim([0.86, 1])
