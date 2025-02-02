@@ -24,14 +24,24 @@ class Retarder(object):
         #dummy wavelength init:
         self.wavelength = pol_waves[0]
 
-        #crystal orientations:
+        #quartz crystal orientations:
         self.psi, self.eta, self.xi = 0, 0, 0
         self.eta_angles = self.compute_eta_angles()
 
+        """ optical and mechanical coeffs crom Crystan handbook"""
+
         #CTEs quartz
-        self.alpha_o, self.alpha_e = 7.1*1e-6, 13.2*1e-6
+        self.cte_o, self.cte_e = 7.1*1e-6, 13.2*1e-6
         #TOC quartz
-        self.toc_o, self.toc_e = 6.5*1e-6, -5.5*1e-6
+        self.dndt_o, self.dndt_e = 6.5*1e-6, -5.5*1e-6
+
+        #CTEs MgF2
+        self.cte_co, self.cte_ce = 13.7*1e-6, 8.9*1e-6
+        #TOC MgF2
+        self.dndt_co, self.dndt_ce = 2.3*1e-6, 1.7*1e-6
+
+        #CTE and TOC infrasil
+        self.cte_w, self.dndt_w = 0.55*1e-6, 12.9*1e-6
 
         """refraction index"""
         ## Mgf2 dummy init
@@ -70,7 +80,7 @@ class Retarder(object):
         """
         return [self.eta + np.radians(angle) for angle in ANGLES]
 
-    def get_refractiveindex(self, wl):
+    def get_refractiveindex(self, wl, DT=0.):
         """
 
         :param wl: wavelength in nanometers
@@ -78,31 +88,38 @@ class Retarder(object):
         """
         inx2 = mat.mgf2(wl)
         self.no_c, self.ne_c = inx2[0, 0], inx2[0, 1]
-        self.n_window = mat.fusedsilica(wl)
-        self.no, self.ne = mat.quartz_retarder(wl)
+        self.no_c *= (1+self.dndt_co*DT)
+        self.ne_c *= (1+self.dndt_ce*DT)
 
-    def get_opticalthickness(self, wavelength):
+        self.n_window = mat.fusedsilica(wl)
+        self.n_window *= (1+self.dndt_w*DT)
+
+        self.no, self.ne = mat.quartz_retarder(wl)
+        self.no *= (1+self.dndt_o*DT)
+        self.ne *= (1+self.dndt_e*DT)
+
+    def get_opticalthickness(self, wavelength, DT=0):
         """
         Computes he opti
         :param wavelength:
         :return: updates the variables for optical thickness
         """
-        self.thkW = self.compute_optical_thickness(self.WINDOW_THICKNESS, wavelength) #window
-        self.thkO = self.compute_optical_thickness(self.OIL_THICNKESS, wavelength) #oil
-        self.thkC = self.compute_optical_thickness(self.COATING_THICKNESS, wavelength) #coating
-        self.plate_thickness = self.compute_optical_thickness(self.PLATE_THICKNESS, wavelength)
+        self.thkW = self.compute_optical_thickness(self.WINDOW_THICKNESS, wavelength, CTE=self.cte_w, DT=DT) #window
+        self.thkO = self.compute_optical_thickness(self.OIL_THICNKESS, wavelength, DT=DT) #oil
+        self.thkC = self.compute_optical_thickness(self.COATING_THICKNESS, wavelength, CTE=self.cte_co, DT=DT) #coating
+        self.plate_thickness = self.compute_optical_thickness(self.PLATE_THICKNESS, wavelength, CTE=self.cte_o,DT=DT)
 
-    def compute_optical_thickness(self, thickness, wavelength):
+    def compute_optical_thickness(self, thickness, wavelength, CTE=0, DT=0):
         """
 
         :param thickness: mechanical thicnkess
         :param wavelength: wavelencth in nm
-        :return: opticla thickness for the given wavelength
+        :return: optical thickness for the given wavelength
         """
         if isinstance(thickness, list):
-            return [t / wavelength for t in thickness]
+            return [(t*(1+CTE*DT))/ wavelength for t in thickness]
         else:
-            return thickness/wavelength
+            return thickness*(1+CTE*DT)/wavelength
 
     def create_layer_stack(self, bonding=None, window=True):
         """
@@ -153,7 +170,7 @@ class Retarder(object):
 
         return np.asarray(layers)
 
-    def compute_mueller_stack(self, wavelength, bonding=None, window=True):
+    def compute_mueller_stack(self, wavelength, bonding=None, window=True, DT=0):
         """
 
         :param wavelength: wavelength in nm
@@ -162,10 +179,10 @@ class Retarder(object):
         :return: Transmitted mueller matrix for the stack at a given wavelength
         """
         #update refraction index values
-        self.get_refractiveindex(wavelength)
+        self.get_refractiveindex(wavelength, DT=DT)
 
         #updated optical thicness
-        self.get_opticalthickness(wavelength)
+        self.get_opticalthickness(wavelength, DT=DT)
 
         #create layer stack
         layer = self.create_layer_stack(bonding=bonding, window=window)
@@ -179,6 +196,10 @@ class Retarder(object):
         MMt[0, 0] = MMT_00
         #FIXME:throws an inf error when computing with an oil+window config
         return MMt
+
+    def montecarlo(self, s_mean, s_std, N=1000):
+        samples = np.random.normal(s_mean, s_std, N)
+        return samples
 
 
 
