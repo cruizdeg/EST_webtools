@@ -8,7 +8,7 @@ Class created from esoria code in order to have a modulable code
 """
 import numpy as np
 from Berreman import Berreman
-import Berreman.materials as mat
+import materials as mat
 
 ### CONSTANTS ###
 pol_waves = [393.3, 396.8, 422.7, 453, 455.4, 460.7, 492.3, 514, 517.3,
@@ -19,7 +19,7 @@ ANGLES = [0, 90, 63.75, 153.75, 0, 90]
 
 class Retarder(object):
     def __init__(self):
-        self.berreman = Berreman.Berreman()
+        self.berreman = Berreman()
 
         #dummy wavelength init:
         self.wavelength = pol_waves[0]
