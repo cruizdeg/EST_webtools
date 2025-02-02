@@ -105,6 +105,12 @@ class Retarder(object):
             return thickness/wavelength
 
     def create_layer_stack(self, bonding=None, window=True):
+        """
+        Creates a zero order plate made of a 6 layer of stacked quartz
+        :param bonding: the bonding method can be oil or optical contact
+        :param window: f an input/output window is applied, works only for oil bonding
+        :return: the stack layer
+        """
         layers = []
 
         if bonding == "oil":
@@ -148,6 +154,13 @@ class Retarder(object):
         return np.asarray(layers)
 
     def compute_mueller_stack(self, wavelength, bonding=None, window=True):
+        """
+
+        :param wavelength: wavelength in nm
+        :param bonding: the bonding method can be either optical contact or oil
+        :param window: only needed for oil bonding
+        :return: Transmitted mueller matrix for the stack at a given wavelength
+        """
         #update refraction index values
         self.get_refractiveindex(wavelength)
 
@@ -164,6 +177,7 @@ class Retarder(object):
         MMT_00 = MMt[0, 0]
         MMt /= MMT_00
         MMt[0, 0] = MMT_00
+        #FIXME:throws an inf error when computing with an oil+window config
         return MMt
 
 
