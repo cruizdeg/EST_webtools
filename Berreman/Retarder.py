@@ -57,7 +57,7 @@ class Retarder(object):
         self.thkC = None #coating
         self.plate_thickness = None
 
-        self.get_opticalthicnkess(self.wavelength)
+        self.get_opticalthickness(self.wavelength)
 
         """field matrix in/out air"""
         self.Fc = self.berreman.fmat([1, 1, 1, 0, 0, 0], 0)  # field matrix for air at normal incidence, n=1, beta=0
@@ -81,13 +81,24 @@ class Retarder(object):
         self.n_window = mat.fusedsilica(wl)
         self.no, self.ne = mat.quartz_retarder(wl)
 
-    def get_opticalthicnkess(self, wavelength):
+    def get_opticalthickness(self, wavelength):
+        """
+        Computes he opti
+        :param wavelength:
+        :return: updates the variables for optical thickness
+        """
         self.thkW = self.compute_optical_thickness(self.WINDOW_THICKNESS, wavelength) #window
         self.thkO = self.compute_optical_thickness(self.OIL_THICNKESS, wavelength) #oil
         self.thkC = self.compute_optical_thickness(self.COATING_THICKNESS, wavelength) #coating
         self.plate_thickness = self.compute_optical_thickness(self.PLATE_THICKNESS, wavelength)
 
     def compute_optical_thickness(self, thickness, wavelength):
+        """
+
+        :param thickness: mechanical thicnkess
+        :param wavelength: wavelencth in nm
+        :return: opticla thickness for the given wavelength
+        """
         if isinstance(thickness, list):
             return [t / wavelength for t in thickness]
         else:
@@ -141,7 +152,7 @@ class Retarder(object):
         self.get_refractiveindex(wavelength)
 
         #updated optical thicness
-        self.get_opticalthicnkess(wavelength)
+        self.get_opticalthickness(wavelength)
 
         #create layer stack
         layer = self.create_layer_stack(bonding=bonding, window=window)
