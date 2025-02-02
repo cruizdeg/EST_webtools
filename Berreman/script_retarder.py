@@ -9,6 +9,8 @@ predictions for DKIST part 2: application.
 """
 import numpy as np
 from Berreman import Berreman
+import matplotlib
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import Berreman.materials as mat
 
