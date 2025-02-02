@@ -74,6 +74,22 @@ def quartz(w):
     # Combine results into a single numpy array
     return np.column_stack((ne, no, dnedx, dnodx))
 
+def quartz_retarder(w):
+    """
+    index etc... for the quartz retarder
+    :param w:
+    :return:
+    """
+    #ordinary coefficients
+    AO, BO, CO, DO, FO = 1.28604141, 1.07044083, 1.00585997e-2, 1.10202242, 100
+    n_o = sellmeier(w, [AO, BO, CO, DO, FO])
+    #extraordinary coefficients
+    AE, BE, CE, DE, FE = 1.28851804, 1.09509924, 1.02101864e-2, 1.15662475, 100
+    n_e = sellmeier(w, [AE, BE, CE, DE, FE])
+    return n_o, n_e
+
+
+
 def mgf2(w):
     """
     Sellmeier dispersion equation for crystalline magnesium fluoride (MgF2).
@@ -127,8 +143,9 @@ def sellmeier(w, coeffs):
     """Computes the refraction index with the selmeier eq.s."""
     w /= 1000  # Converts to microns
     ww = w**2
-    n = 1+(coeffs[0] * ww)/(ww - coeffs[3])+(coeffs[1] * ww)/(ww-coeffs[4])+(coeffs[2] * ww)/(ww-coeffs[5])
+    n = coeffs[0]+(coeffs[1] * ww)/(ww - coeffs[2])+(coeffs[3] * ww)/(ww-coeffs[4])
     return np.sqrt(n)
+
 
 def birrefringence(w, material):
     An = material["H"] + (material["I"] * w**2)/(w**2 - material["G"]) + (material["J"] * w**2)/(w**2 - material["L"])
