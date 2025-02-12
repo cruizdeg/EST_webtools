@@ -7,19 +7,19 @@ Created on Thu Jan 23 12:49:25 2025
 Class created from esoria code in order to have a modulable code
 """
 import numpy as np
-from Berreman import Berreman
+import Berreman
 import materials as mat
 
 ### CONSTANTS ###
+
+ANGLES = [0, 90, 63.75, 153.75, 0, 90]
 pol_waves = [393.3, 396.8, 422.7, 453, 455.4, 460.7, 492.3, 514, 517.3,
                      525, 587.6, 589, 617.3, 630, 656.3, 709, 815.1, 849.8, 854,
                      1083.0, 1565.0]
 
-ANGLES = [0, 90, 63.75, 153.75, 0, 90]
-
 class Retarder(object):
     def __init__(self):
-        self.berreman = Berreman()
+        self.berreman = Berreman.Berreman()
 
         #dummy wavelength init:
         self.wavelength = pol_waves[0]
@@ -31,12 +31,12 @@ class Retarder(object):
         """ optical and mechanical coeffs crom Crystan handbook"""
 
         #CTEs quartz
-        self.cte_o, self.cte_e = 7.1*1e-6, 13.2*1e-6
+        self.cte_o, self.cte_e = 0,0#7.1*1e-6, 13.2*1e-6
         #TOC quartz
-        self.dndt_o, self.dndt_e = 6.5*1e-6, -5.5*1e-6
+        self.dndt_o, self.dndt_e = 13.7*1e-6, 8.9*1e-6#6.5*1e-6, -5.5*1e-6
 
         #CTEs MgF2
-        self.cte_co, self.cte_ce = 13.7*1e-6, 8.9*1e-6
+        self.cte_co, self.cte_ce = 0,0 #13.7*1e-6, 8.9*1e-6
         #TOC MgF2
         self.dndt_co, self.dndt_ce = 2.3*1e-6, 1.7*1e-6
 
@@ -60,7 +60,7 @@ class Retarder(object):
         self.PLATE_THICKNESS = [2124900.0, 2099100.0, 2132400.0, 2099100.0, 2124900.0, 2099100.0]
         self.WINDOW_THICKNESS = 10000000.0
         self.OIL_THICNKESS = 10000.0
-        self.COATING_THICKNESS = 94.4
+        self.COATING_THICKNESS = 0*94.4
         ##Optical thicnkess
         self.thkW = None  #window
         self.thkO = None #oil
